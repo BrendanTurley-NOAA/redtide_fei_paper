@@ -5,8 +5,8 @@ library(tibble)
 library(tidyr)
 library(cmocean)
 
-setwd('~/Downloads/rt_cmaps')
 
+setwd("C:/Users/brendan.turley/Documents/R_projects/redtide_fei_paper/data")
 rt_c <- read.csv('rt_central.csv')
 
 
@@ -66,8 +66,9 @@ barplot(rt_c$wt.score[-4])
 
 
 dat <- read.csv('NewTermMerged.csv',row.names = 1)
-
-# data_long <- dat %>%
+row.names(dat)
+colnames(dat)
+# data_londata()# data_long <- dat %>%
 #   rownames_to_column %>%
 #   gather(key = 'key', value = 'value', -rowname)
 # 
@@ -103,9 +104,15 @@ colnames(border_mat) <- colnames(dat)
 ord <- c("Red.Tide","Hurricanes","Offshore.Winds","Currents","Loop.Current","Freshwater.Input","Sewage.Runoff",
          "Water.Quality","Thermocline","Water.Temperature","Habitat","Inshore.Target.Fish","Prey.Fish",
          "Fish.Distribution","Fish.Mortality","Snappers.Groupers","Lionfish","Sharks",
-         "Commercial.Effort","Recreational.Effort","Tourism","Fishery.Managment")
+         "Commercial.Effort","Recreational.Effort","Tourism","Fishery.Management")
 grid.col <- c('red',rep(4,9),rep(3,8),rep('purple',4))
 row.names(dat)
+colnames(dat)
+identical(rownames(dat), colnames(dat))
+ord
+
+sort(union(rownames(dat), colnames(dat)))
+sort(ord)
 
 png('rt_fei_rtchord.png',height = 8, width = 8, units = 'in', res=300)
 par(mar=c(4,4,4,4),xpd=T)
