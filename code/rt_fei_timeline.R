@@ -3,6 +3,7 @@ library(lubridate)
 library(scales)
 
 setwd("~/Documents/R/Github/redtide_fei")
+setwd("C:/Users/brendan.turley/Downloads/data/data")
 getwd()
 setwd(paste0(getwd(),'/data'))
 
@@ -40,20 +41,20 @@ plot(timeline, rep(1, length(timeline)),
 text(timeline[yplt], rep(0, length(yplt)), seq(2000,2023,5))
 points(timeline[yplt], rep(1, length(yplt)), pch = '|', lwd = 3, cex = 1.25)
 
-segments(sedar$begin[which(sedar$Species=='gag')], 2, 
-         sedar$end[which(sedar$Species=='gag')], 2,
+segments(sedar$begin[which(sedar$species=='gag')], 2, 
+         sedar$end[which(sedar$species=='gag')], 2,
          lwd = 10, col = 4, lend=2)
 
-segments(sedar$begin[which(sedar$Species=='red grouper')], 3, 
-         sedar$end[which(sedar$Species=='red grouper')], 3,
+segments(sedar$begin[which(sedar$species=='red grouper')], 3, 
+         sedar$end[which(sedar$species=='red grouper')], 3,
          lwd = 10, col = 2, lend=2)
 
 ind <- c(1,3:5,7:12)
 cols <- as.numeric(factor(amendments$species[ind],levels=c('red grouper', 'reef fish', 'gag')))+1
 cols[c(1,4)] <- 3
 for(i in 1:10){
-  segments(amendments$date.initiated[ind[i]], -i, 
-           amendments$date.effective[ind[i]], -i,
+  segments(amendments$begin[ind[i]], -i, 
+           amendments$end[ind[i]], -i,
            lwd = 10, col = cols[i], lend=2)
 }
 

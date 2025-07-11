@@ -1,39 +1,39 @@
+
 library(cmocean)
 library(grid)
 library(magick)
+library(readxl)
 
-setwd("/Users/Brendan/Desktop/professional/projects/Postdoc_FL/images")
+setwd("C:/Users/brendan.turley/Documents/R_projects/redtide_fei_paper/data")
 gag <- image_read("640x427-Grouper-Gag-NOAAFisheries.png")
 rgr <- image_read("640x427-Grouper-Red-NOAAFisheries.png")
 
-setwd("/Users/Brendan/Desktop/professional/projects/Postdoc_FL/data")
 grouper <- read.csv('Grouper_ssb_rec_trajectories.csv')
+grouper <- read.csv('Grouper_Bio_Rec_trajectories.csv')
 
-
-col <- c('gray50','purple3','gold3')
+col <- c(1,'gray50','purple3','gold3')
 cols <- c(1,'forestgreen','dodgerblue','orange2')
 
 
 
-setwd("/Users/Brendan/Desktop/professional/projects/Postdoc_FL/figures")
+setwd("C:/Users/brendan.turley/Documents/R_projects/redtide_fei_paper/figures")
 png('fei_populations.png',width=10,height=7,units='in',res=300)
 par(mfrow=c(2,2), mar=c(4,4,2,1))
 plot(grouper$Year, grouper$GAG_SSB_SEDAR72,
      typ='n', las=1,
-     xlim=c(1990,2020),
+     xlim=c(1990,2022),
      ylim=range(grouper[,2:5],na.rm=T),
      xlab='',ylab='Gag SSB')
 abline(v=c(2005,2014,2018),col='gray80',lwd=10)
 for(i in 2:5){
   points(grouper$Year, grouper[,i], typ='o', lwd=2, col=cols[i-1], pch=16, cex=.8)
 }
-legend('topleft',c('SEDAR72','SEADR33U','SEDAR33','SEDAR10U'),pch=16,col=cols,bty='n')
+legend('topleft',c('SEDAR72','SEDAR33U','SEDAR33','SEDAR10U'),pch=16,col=cols,bty='n')
 mtext('a)',adj=-.1,line=.5)
-
 
 plot(grouper$Year, grouper$GAG_R_SEDAR72,
      typ='n', las=1,
-     xlim=c(1990,2020),
+     xlim=c(1990,2022),
      ylim=range(grouper[,6:9],na.rm=T),
      xlab='',ylab='Gag Recruitment')
 abline(v=c(2005,2014,2018),col='gray80',lwd=10)
@@ -44,26 +44,27 @@ mtext('b)',adj=-.1,line=.5)
 # rasterImage(gag, 2009, 2, 2021, 3)
 grid.raster(gag,width=.15,x=unit(.89, "npc"),y=unit(.88, "npc"))
 
+
 plot(grouper$Year, grouper$RGR_SSB_SEDAR61,
      typ='n', las=1,
-     xlim=c(1990,2020),
-     ylim=range(grouper[,10:12],na.rm=T),
+     xlim=c(1990,2022),
+     ylim=range(grouper[,10:13],na.rm=T),
      xlab='',ylab='Red grouper SSB')
 abline(v=c(2005,2014,2018),col='gray80',lwd=10)
-for(i in 10:12){
+for(i in 10:13){
   points(grouper$Year, grouper[,i], typ='o', lwd=2, col=col[i-9], pch=16, cex=.8)
 }
-legend('topleft',c('SEDAR61','SEADR42','SEDAR12U'),pch=16,col=col,bty='n')
+legend('topleft',c('SEDAR88','SEDAR61','SEDAR42','SEDAR12U'),pch=16,col=col,bty='n')
 mtext('c)',adj=-.1,line=.5)
 
 plot(grouper$Year, grouper$RGR_R_SEDAR61,
      typ='n', las=1,
-     xlim=c(1990,2020),
-     ylim=range(grouper[,13:15],na.rm=T),
+     xlim=c(1990,2022),
+     ylim=range(grouper[,14:17],na.rm=T),
      xlab='',ylab='Red grouper Recruitment')
 abline(v=c(2005,2014,2018),col='gray80',lwd=10)
-for(i in 13:15){
-  points(grouper$Year, grouper[,i], typ='o', lwd=2, col=col[i-12], pch=16, cex=.8)
+for(i in 14:17){
+  points(grouper$Year, grouper[,i], typ='o', lwd=2, col=col[i-13], pch=16, cex=.8)
 }
 mtext('d)',adj=-.1,line=.5)
 grid.raster(rgr,width=.15,x=unit(.89, "npc"),y=unit(.38, "npc"))
