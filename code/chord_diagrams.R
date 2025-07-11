@@ -114,6 +114,7 @@ ord
 sort(union(rownames(dat), colnames(dat)))
 sort(ord)
 
+setwd("C:/Users/brendan.turley/Documents/R_projects/redtide_fei_paper/figures")
 png('rt_fei_rtchord.png',height = 8, width = 8, units = 'in', res=300)
 par(mar=c(4,4,4,4),xpd=T)
 circos.clear()
