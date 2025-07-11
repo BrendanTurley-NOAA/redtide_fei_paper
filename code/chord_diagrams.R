@@ -8,7 +8,6 @@ library(cmocean)
 
 setwd("C:/Users/brendan.turley/Documents/R_projects/redtide_fei_paper/data")
 rt_c <- read.csv('rt_central.csv')
-
 rt_ch <- rt_c[-4,c(2:3)]
 rt_ch2 <- rt_c[-4,]
 
@@ -35,20 +34,20 @@ axis(2,b[1,], paste('n = ',rt_c$n[-4]),las=2,tick=F)
 dev.off()
 
 
-barplot(rt_c$Tot[-4],density=c(0,10),col=c('gray40','gold'),fill='gold')
-
-barplot(rt_c$wt.score[-4])
-
-
-
+setwd("C:/Users/brendan.turley/Documents/R_projects/redtide_fei_paper/data")
 dat <- read.csv('NewTermMerged.csv',row.names = 1)
-row.names(dat)
-colnames(dat)
-# data_londata()# data_long <- dat %>%
-#   rownames_to_column %>%
-#   gather(key = 'key', value = 'value', -rowname)
-# 
-# chordDiagram(data_long)
+
+
+chordDiagram(as.matrix(dat), col = cols, annotationTrack = "grid", 
+             link.lwd = lwd_mat, link.border = border_mat,
+             directional = 1, direction.type = c("diffHeight", "arrows"),
+             link.arr.type = "big.arrow", diffHeight = -mm_h(.5),
+             preAllocateTracks = list(track.height =.4))
+circos.track(track.index = 1, panel.fun = function(x, y) {
+  circos.text(CELL_META$xcenter, CELL_META$ylim[1], CELL_META$sector.index, 
+              facing = "clockwise", niceFacing = T, adj = c(0, 0.5))
+}, bg.border = NA) # here set bg.border to NA is important
+
 
 ind <- c(57,union(which(dat[,57]>0),which(dat[57,]>0)))
 dat <- dat[ind,ind]
