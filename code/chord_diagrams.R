@@ -9,53 +9,29 @@ library(cmocean)
 setwd("C:/Users/brendan.turley/Documents/R_projects/redtide_fei_paper/data")
 rt_c <- read.csv('rt_central.csv')
 
-
-b <- barplot(t(rt_c[-4,c(2:3)]),
-        beside=T, col=c('gray40','gray90'),
-        names.arg = c('Destin','Panama City','St. Pete','Maderia Beach','Pine Island'),
-        ylab='Number of links')
-legend('topleft',c('Red tide','Water Quality'),fill=c('gray40','gray90'),bty='n')
-# text(apply(b,2,mean), 22, paste('n = ',rt_c$n[-4]),xpd=T)
-text(apply(b,2,mean), -1, paste('n = ',rt_c$n[-4]),xpd=T)
-abline(h=0)
-
 rt_ch <- rt_c[-4,c(2:3)]
 rt_ch2 <- rt_c[-4,]
 
+setwd("C:/Users/brendan.turley/Documents/R_projects/redtide_fei_paper/figures")
 png('rt_fei_rtlinks.png',height = 4, width = 6, units = 'in', res=300)
-par(mar=c(4,7,1,1))
-b <- barplot(t(rt_ch[nrow(rt_ch):1,]),
-             beside=T, col=c('gray40','gray90'),horiz = T, las=1,
-             names.arg = rep(NA,5),
-             # names.arg = rev(c('Destin','Panama City','St. Pete','Maderia Beach','Pine Island')),
-             xlab='Number of links')
-legend('topright',c('Water Quality','Red tide'),fill=c('gray90','gray40'),bty='n')
-# text(apply(b,2,mean), 22, paste('n = ',rt_c$n[-4]),xpd=T)
-axis(2,b[2,], rev(c('Destin','Panama City','St. Petersburg','Maderia Beach','Pine Island')),las=2,tick=F)
-axis(2,b[1,], paste('n = ',rt_c$n[-4]),las=2,tick=F)
-# text(-1.5, b[1,]-.5, paste('n = ',rt_c$n[-4]),xpd=T)
-# abline(v=0)
-dev.off()
-
-png('rt_fei_rtlinks2.png',height = 4, width = 6, units = 'in', res=300)
 par(mar=c(4,7,1,1))
 b <- barplot(t(rt_ch[nrow(rt_ch):1,]),
              beside=T, col=c('gray50','gray90'),horiz = T, las=1,
              names.arg = rep(NA,5),
-             # names.arg = rev(c('Destin','Panama City','St. Pete','Maderia Beach','Pine Island')),
              xlab='Number of links')
 barplot(t(rt_ch2[nrow(rt_ch2):1,4:5]),
         space=c(1,2,2,2,2),
         add=T,horiz = T,
         col=c('white'),density=c(20,0),angle=90+45,
         names.arg = rep(NA,5),xaxt='n')
-barplot(t(rt_ch2[nrow(rt_ch2):1,6:7]),space=c(2,2,2,2,2),add=T,horiz = T,col=c('gray20'),density=c(20,0),names.arg = rep(NA,5),xaxt='n')
+barplot(t(rt_ch2[nrow(rt_ch2):1,6:7]),
+        space=c(2,2,2,2,2),
+        add=T,horiz = T,
+        col=c('gray20'),density=c(20,0),
+        names.arg = rep(NA,5),xaxt='n')
 legend('topright',c('Water Quality','Red tide'),fill=c('gray90','gray50'),bty='n')
-# text(apply(b,2,mean), 22, paste('n = ',rt_c$n[-4]),xpd=T)
-axis(2,b[2,], rev(c('Destin','Panama City','St. Petersburg','Maderia Beach','Pine Island')),las=2,tick=F)
+axis(2,b[2,], rev(c('Destin','Panama City','St. Petersburg','Madeira Beach','Pine Island')),las=2,tick=F)
 axis(2,b[1,], paste('n = ',rt_c$n[-4]),las=2,tick=F)
-# text(-1.5, b[1,]-.5, paste('n = ',rt_c$n[-4]),xpd=T)
-# abline(v=0)
 dev.off()
 
 

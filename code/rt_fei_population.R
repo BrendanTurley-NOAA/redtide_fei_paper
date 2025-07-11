@@ -24,7 +24,8 @@ plot(grouper$Year, grouper$GAG_SSB_SEDAR72,
      xlim=c(1990,2022),
      ylim=range(grouper[,2:5],na.rm=T),
      xlab='',ylab='Gag SSB')
-abline(v=c(2005,2014,2018),col='gray80',lwd=10)
+grid()
+abline(v=c(2005,2014,2018,2021),col='gray80',lwd=10)
 for(i in 2:5){
   points(grouper$Year, grouper[,i], typ='o', lwd=2, col=cols[i-1], pch=16, cex=.8)
 }
@@ -36,7 +37,8 @@ plot(grouper$Year, grouper$GAG_R_SEDAR72,
      xlim=c(1990,2022),
      ylim=range(grouper[,6:9],na.rm=T),
      xlab='',ylab='Gag Recruitment')
-abline(v=c(2005,2014,2018),col='gray80',lwd=10)
+grid()
+abline(v=c(2005,2014,2018,2021),col='gray80',lwd=10)
 for(i in 6:9){
   points(grouper$Year, grouper[,i], typ='o', lwd=2, col=cols[i-5], pch=16, cex=.8)
 }
@@ -50,7 +52,8 @@ plot(grouper$Year, grouper$RGR_SSB_SEDAR61,
      xlim=c(1990,2022),
      ylim=range(grouper[,10:13],na.rm=T),
      xlab='',ylab='Red grouper SSB')
-abline(v=c(2005,2014,2018),col='gray80',lwd=10)
+grid()
+abline(v=c(2005,2014,2018,2021),col='gray80',lwd=10)
 for(i in 10:13){
   points(grouper$Year, grouper[,i], typ='o', lwd=2, col=col[i-9], pch=16, cex=.8)
 }
@@ -62,7 +65,8 @@ plot(grouper$Year, grouper$RGR_R_SEDAR61,
      xlim=c(1990,2022),
      ylim=range(grouper[,14:17],na.rm=T),
      xlab='',ylab='Red grouper Recruitment')
-abline(v=c(2005,2014,2018),col='gray80',lwd=10)
+grid()
+abline(v=c(2005,2014,2018,2021),col='gray80',lwd=10)
 for(i in 14:17){
   points(grouper$Year, grouper[,i], typ='o', lwd=2, col=col[i-13], pch=16, cex=.8)
 }
