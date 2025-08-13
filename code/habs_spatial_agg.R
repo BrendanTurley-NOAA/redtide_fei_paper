@@ -1,3 +1,4 @@
+
 library(fields)
 library(lubridate)
 library(MASS)
@@ -17,23 +18,28 @@ topo_lat <- ncvar_get(bathy, 'lat')
 topo_lon <- ncvar_get(bathy, 'lon')
 nc_close(bathy)
 
-setwd('~/Desktop/professional/projects/Postdoc_FL/data/habs')
+setwd("C:/Users/brendan.turley/Documents/data/habs")
 # original data requested from https://habsos.noaa.gov/about
-habs1 <- read.csv('habsos_20220225.csv')
-habs1$date <- dmy_hm(paste(substr(habs1$SAMPLE_DATE,1,15),substr(habs1$SAMPLE_DATE,30,31)))
-habs <- habs1[which(year(habs1$date)<2022 & year(habs1$date)>1999 & habs1$STATE_ID=='FL' ),]
-### duplication
-names(habs)[c(3:4,6,26)]
-dups1 <- which(duplicated(habs[c(3:4,6,26)]))
-dups2 <- which(duplicated(habs[c(3:4,6,26)],fromLast = T))
+# habs1 <- read.csv('habsos_20220225.csv')
+# habs1 <- read.csv('habsos_20230714.csv')
+habs1 <- read.csv('habsos_20240430_fix.csv')
+# habs1$date <- dmy_hm(paste(substr(habs1$SAMPLE_DATE,1,15),substr(habs1$SAMPLE_DATE,30,31)))
+habs1$date <- mdy(habs1$SAMPLE_DATE)
+habs <- habs1[which(year(habs1$date)<2024 & year(habs1$date)>1999 & habs1$STATE_ID=='FL' ),]
 
-new <- matrix(NA,length(dups1),1)
-for(i in 1:length(dups1)){
-  # new[i] <- mean(data$Karenia.brevis.abundance..cells.L.[c(dups1[i],dups2[i])],na.rm=T)
-  new[i,] <- mean(habs[c(dups1[i],dups2[i]),10],na.rm=T)
-}
-habs[dups1,10] <- new
-habs <- habs[-dups2,]
+### duplication
+# names(habs)[c(3:4,6,26)]
+# dups1 <- which(duplicated(habs[c(3:4,6,26)]))
+# dups2 <- which(duplicated(habs[c(3:4,6,26)],fromLast = T))
+
+# new <- matrix(NA,length(dups1),1)
+# for(i in 1:length(dups1)){
+#   # new[i] <- mean(data$Karenia.brevis.abundance..cells.L.[c(dups1[i],dups2[i])],na.rm=T)
+#   new[i,] <- mean(habs[c(dups1[i],dups2[i]),10],na.rm=T)
+# }
+# habs[dups1,10] <- new
+# habs <- habs[-dups2,]
+### end, no dups
 
 lonbox_e <- -80.6 ### Florida Bay
 lonbox_w <- -88 ### mouth of Mississippi River
