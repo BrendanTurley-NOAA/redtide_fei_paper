@@ -3,39 +3,45 @@ library(fields)
 library(lubridate)
 library(MASS)
 library(ncdf4)
-library(rgdal)
+# library(rgdal)
+library(terra)
 library(scales)
 
 ### load map
-# setwd("C:/Users/brendan.turley/Desktop/FL_habs/ne_10m_admin_0_countries")
-setwd("~/Desktop/professional/biblioteca/data/shapefiles/ne_10m_admin_0_countries")
-world <- readOGR('ne_10m_admin_0_countries.shp')
+# setwd("~/Desktop/professional/biblioteca/data/shapefiles/ne_10m_admin_0_countries")
+setwd("C:/Users/brendan.turley/Documents/data/shapefiles/ne_10m_admin_0_countries")
+world <- vect('ne_10m_admin_0_countries.shp')
 
-setwd("~/Desktop/professional/biblioteca/data")
+# setwd("~/Desktop/professional/biblioteca/data")
+setwd("C:/Users/brendan.turley/Documents/data/bathy")
 bathy <- nc_open('etopo1.nc')
 topo <- ncvar_get(bathy, 'Band1')
 topo_lat <- ncvar_get(bathy, 'lat')
 topo_lon <- ncvar_get(bathy, 'lon')
 nc_close(bathy)
 
-setwd("C:/Users/brendan.turley/Documents/data/habs")
+# setwd("C:/Users/brendan.turley/Documents/data/habs")
+setwd("C:/Users/brendan.turley/Documents/data/habs/0120767/8.8/data/0-data")
 # original data requested from https://habsos.noaa.gov/about
 # habs1 <- read.csv('habsos_20220225.csv')
 # habs1 <- read.csv('habsos_20230714.csv')
-habs1 <- read.csv('habsos_20240430_fix.csv')
+habs1 <- read.csv('habsos_20240430.csv')
+habs1 <- habs1[,-grep('X',names(habs1))]
 # habs1$date <- dmy_hm(paste(substr(habs1$SAMPLE_DATE,1,15),substr(habs1$SAMPLE_DATE,30,31)))
-habs1$date <- mdy(habs1$SAMPLE_DATE)
+habs1$date <- ymd(habs1$SAMPLE_DATE)
+table(year(habs1$date), month(habs1$date))
 habs <- habs1[which(year(habs1$date)<2024 & year(habs1$date)>1999 & habs1$STATE_ID=='FL' ),]
+table(year(habs$date), month(habs$date))
 
 ### duplication
 # names(habs)[c(3:4,6,26)]
 # dups1 <- which(duplicated(habs[c(3:4,6,26)]))
 # dups2 <- which(duplicated(habs[c(3:4,6,26)],fromLast = T))
-
+# 
 # new <- matrix(NA,length(dups1),1)
 # for(i in 1:length(dups1)){
 #   # new[i] <- mean(data$Karenia.brevis.abundance..cells.L.[c(dups1[i],dups2[i])],na.rm=T)
-#   new[i,] <- mean(habs[c(dups1[i],dups2[i]),10],na.rm=T)
+#   new[i,] <- mean(habs[c(dups1[i],dups2[i]),11],na.rm=T)
 # }
 # habs[dups1,10] <- new
 # habs <- habs[-dups2,]
@@ -50,6 +56,7 @@ habs <- habs[ind,]
 ind2 <- which(habs$LONGITUDE>-82 & habs$LATITUDE>27)
 habs <- habs[-ind2,]
 # plot(habs$LONGITUDE,habs$LATITUDE,col=year(habs$date),asp=1)
+table(year(habs$date), month(habs$date))
 
 # lons <- seq(lonbox_w,lonbox_e,by=.04)
 # lats <- seq(latbox_s,latbox_n,by=.04)
@@ -121,6 +128,27 @@ contour(topo_lon,topo_lat,topo,add=T,
 mtext('b)',adj=0,font=2)
 dev.off()
 
+
+
+### timeseries
+
+kb_m <- aggregate(CELLCOUNT ~ year(date) + month(date), data = habs, quantile, .75, na.rm = T) |>
+  setNames(c('year', 'month', 'kb_m'))
+kb_m <- kb_m[order(kb_m$year, kb_m$month),]
+kb_m$yr_m <- kb_m$year + kb_m$month/12
+
+kb_q99 <- aggregate(CELLCOUNT ~ year(date) + month(date), data = habs, quantile, .95, na.rm = T) |>
+  setNames(c('year', 'month', 'kb_qnt'))
+kb_q99 <- kb_q99[order(kb_q99$year, kb_q99$month),]
+kb_q99$yr_m <- kb_q99$year + kb_q99$month/12
+
+plot(kb_qnt+1 ~ yr_m, data = kb_q99, typ = 'h', log = 'y', xaxt = 'n', las = 1, lwd = 2, lend = 2)
+abline(h = 1e5, lty = 5)
+with(subset(kb_q99, kb_qnt>=1e5),
+     points(kb_qnt+1 ~ yr_m, pch = 25, bg = 2))
+axis(1, seq(2000, 2025, 1), las = 2)
+abline(v = seq(2000,2025,1)+(9/12), lty = 5, col = 2)
+# points(kb_m+1 ~ yr_m, data = kb_m, typ = 'l', lwd = 2)
 
 
 habs_h <- aggregate(habs$CELLCOUNT,by=list(lon=lons_c,lat=lats_c),length)
