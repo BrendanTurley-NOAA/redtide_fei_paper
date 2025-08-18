@@ -30,7 +30,7 @@ habs1 <- habs1[,-grep('X',names(habs1))]
 # habs1$date <- dmy_hm(paste(substr(habs1$SAMPLE_DATE,1,15),substr(habs1$SAMPLE_DATE,30,31)))
 habs1$date <- ymd(habs1$SAMPLE_DATE)
 table(year(habs1$date), month(habs1$date))
-habs <- habs1[which(year(habs1$date)<2024 & year(habs1$date)>1999 & habs1$STATE_ID=='FL' ),]
+habs <- habs1[which(year(habs1$date)<2023 & year(habs1$date)>1999 & habs1$STATE_ID=='FL' ),]
 table(year(habs$date), month(habs$date))
 
 ### duplication
@@ -58,16 +58,75 @@ habs <- habs[-ind2,]
 # plot(habs$LONGITUDE,habs$LATITUDE,col=year(habs$date),asp=1)
 table(year(habs$date), month(habs$date))
 
-# lons <- seq(lonbox_w,lonbox_e,by=.04)
-# lats <- seq(latbox_s,latbox_n,by=.04)
+
+
+
+### timeseries
+
+kb_m <- aggregate(CELLCOUNT ~ year(date) + month(date), data = habs, quantile, .75, na.rm = T) |>
+  setNames(c('year', 'month', 'kb_m'))
+kb_m <- kb_m[order(kb_m$year, kb_m$month),]
+kb_m$yr_m <- kb_m$year + kb_m$month/12
+
+kb_q99 <- aggregate(CELLCOUNT ~ year(date) + month(date), data = habs, quantile, .95, na.rm = T) |>
+  setNames(c('year', 'month', 'kb_qnt'))
+kb_q99 <- kb_q99[order(kb_q99$year, kb_q99$month),]
+kb_q99$yr_m <- kb_q99$year + kb_q99$month/12
+
+cols <- colorRampPalette(c('gray30','white','gold','orange2','red4'))(5)
+szs <- c(1,1,1.5,1.5,2)*1.5
+
+
+setwd("C:/Users/brendan.turley/Documents/R_projects/redtide_fei_paper/figures")
+png('rt_fei_hab_comp.png',width=12,height=12,units='in',res=300)
+par(mar = c(2.5,5,2,.5))
+layout(matrix(c(1,1,1,1,
+                2,3,4,5,
+                6,7,8,9,
+                10,11,12,13),4,4,byrow=T))
+
+plot(kb_qnt+1 ~ yr_m, data = kb_q99, typ = 'h', log = 'y', xaxt = 'n', las = 1, lwd = 2, lend = 2,
+     ylab = '', xlab='')
+mtext('K Brevis (cells/mL)',2, line = 3.2, cex = 1)
+abline(h = 1e5, lty = 5)
+with(subset(kb_q99, kb_qnt>=1e5),
+     points(kb_qnt+1 ~ yr_m, pch = 25, bg = 2))
+axis(1, seq(2000, 2025, 1)+(1/12), seq(2000, 2025, 1), las = 1)
+abline(v = seq(2000,2025,1)+(9/12), lty = 5, col = 2)
+mtext(paste0(letters[1],')'),adj=0)
+# points(kb_m+1 ~ yr_m, data = kb_m, typ = 'l', lwd = 2,col='gold')
+
+# setwd("C:/Users/brendan.turley/Documents/R_projects/redtide_fei_paper/figures")
+# png('rt_fei_hab_comp2.png',width=10,height=12,units='in',res=300)
+# par(mfrow = c(4,3), mar = c(3,3,1,1))
+for(j in c(2005)){
+  for(i in 1:12){
+    tmp <- subset(habs, year(date)==j & month(date)==i)
+    tmp$cuts <- cut(tmp$CELLCOUNT, c(-.01,1e3,1e4,1e5,1e6,1e10))
+    tmp <- tmp[order(tmp$CELLCOUNT),]
+    
+    plot(world,xlim=c(-87.5,-80.5),ylim=c(24,31), col = 'gray80')
+    points(tmp$LONGITUDE, tmp$LATITUDE, asp = 1, pch = 21,
+           cex  = szs[as.numeric(tmp$cuts)],
+           bg = cols[as.numeric(tmp$cuts)])
+    contour(topo_lon,topo_lat,topo,add=T,
+            levels=c(-100),col='gray50',lwd=.75)
+    mtext(paste(month.name[i],2005),adj=1)
+    mtext(paste0(letters[i+1],')'),adj=0)
+    # plot(world, add = T)
+    if(i==12){
+      legend('bottomleft',c('0-1000','1000-10,000','10,000-100,000','100,000-1,000,000','>1,000,000'),
+             pt.bg = cols[1:5], pch = 21, pt.cex = 1.75, cex = 1.2,
+             title = 'K. brevis (cells/mL)', bty = 'n', xpd = T)
+    }
+  } 
+}
+dev.off()
+
+
 
 lons <- seq(lonbox_w,lonbox_e,by=.05)
 lats <- seq(latbox_s,latbox_n,by=.05)
-
-# lons <- seq(lonbox_w,lonbox_e,by=.1)
-# lats <- seq(latbox_s,latbox_n,by=.1)
-# lons <- seq(lonbox_w-.1,lonbox_e+.1,by=.0417)
-# lats <- seq(latbox_s-.1,latbox_n+.1,by=.0417)
 
 lats_c <- cut(habs$LATITUDE,lats)
 lons_c <- cut(habs$LONGITUDE,lons)
@@ -75,33 +134,58 @@ lonlat <- expand.grid(lon=levels(lons_c),lat=levels(lats_c))
 h_agg <- aggregate(habs$CELLCOUNT,by=list(lon=lons_c,lat=lats_c),mean,na.rm=T)
 hab_agg <- merge(lonlat,h_agg,by=c('lon','lat'),all=T)
 hab_agg_m <- t(matrix(hab_agg$x,length(levels(lats_c)),length(levels(lons_c))))
-# imagePlot(log10(hab_agg_m),asp=1)
+### display zeros
 ind_na <- which(hab_agg_m==0)
 hab_agg_m[which(hab_agg_m==0)] <- NA
 habs_mp <- log10(hab_agg_m)
 zeros <- matrix(NA,dim(habs_mp)[1],dim(habs_mp)[2])
 zeros[ind_na] <- 0
 
+
 fxn <- function(x) {
-  # mean(x[which(x>quantile(x,.75,na.rm=T))],na.rm=T)
+  # mean(x[which(x>quantile(x,.5,na.rm=T))],na.rm=T)
   # length(which(x>quantile(x,.5,na.rm=T)))
-  # c(length(which(x==0))/length(x),
+  # c(#length(which(x==0))/length(x),
   #   length(which(x>=1e1 & x<1e2))/length(x),
   #   length(which(x>=1e2 & x<1e3))/length(x),
   #   length(which(x>=1e3 & x<1e4))/length(x),
   #   length(which(x>=1e4 & x<1e5))/length(x),
   #   length(which(x>=1e5))/length(x))
-  length(which(x>=1e5))/length(x)
   # length(which(x>1e5))/length(which(x>0))
+  # length(which(x==0))
   # length(which(x>1e5))
+  # length(which(x>=1e5))/length(x) ### PREFERRED
+  c(#length(which(x==0))/length(x),
+    #length(which(x>=0 & x<1e3))/length(x),
+    length(which(x>=1e3 & x<1e4))/length(x),
+    length(which(x>=1e4 & x<1e5))/length(x),
+    length(which(x>=1e5 & x<1e6))/length(x),
+    length(which(x>=1e6))/length(x))
 }
 
 
-x <- aggregate(habs$CELLCOUNT,by=list(month(habs$date)),fxn)
-# barplot(t(x$x[,ncol(x$x):1]),names.arg = month.abb[1:12],las=2)
+cols <- colorRampPalette(c('gray','gold','orange2','orangered3','red4'))(4)
+cols <- colorRampPalette(c('gold','orange2','orangered3','red4'))(4)
+
+x <- aggregate(habs$CELLCOUNT,by=list(year(habs$date),month(habs$date)),fxn)
+x <- x[order(x$Group.1,x$Group.2),]
+
+b <- barplot(t(x$x[,ncol(x$x)]),las=2,col=rev(cols))
+axis(1, at = b[seq(1,length(b),12)],unique(x$Group.1), las = 2)
+
+b <- barplot(t(x$x[,ncol(x$x):1]),las=2,col=rev(cols))
+axis(1, at = b[seq(1,length(b),12)],unique(x$Group.1), las = 2)
+
+b <- barplot(t(x$x),las=2,col=(cols))
+axis(1, at = b[seq(1,length(b),12)],unique(x$Group.1), las = 2)
 
 
-setwd('~/Desktop/professional/projects/Postdoc_FL/figures')
+
+x <- aggregate(habs$CELLCOUNT,by=list(month(habs$date)),
+               function(x) length(which(x>=1e5))/length(x))
+
+# setwd('~/Desktop/professional/projects/Postdoc_FL/figures')
+setwd("C:/Users/brendan.turley/Documents/R_projects/redtide_fei_paper/figures")
 # png('rt_fei_habs.png',width=10,height=4,units='in',res=300)
 # par(mar=c(4.5,4.5,2,2),mfrow=c(1,2))
 png('rt_fei_habs2.png',width=5,height=7,units='in',res=300)
@@ -151,24 +235,124 @@ abline(v = seq(2000,2025,1)+(9/12), lty = 5, col = 2)
 # points(kb_m+1 ~ yr_m, data = kb_m, typ = 'l', lwd = 2)
 
 
-habs_h <- aggregate(habs$CELLCOUNT,by=list(lon=lons_c,lat=lats_c),length)
-hab_h <- merge(lonlat,habs_h,by=c('lon','lat'),all=T)
-hab_h_m <- t(matrix(hab_h$x,length(levels(lats_c)),length(levels(lons_c))))
-hab_h_m[which(hab_h_m==0)] <- NA
-habs_hp <- log10(hab_h_m)
+lons <- seq(lonbox_w,lonbox_e,by=.2)
+lats <- seq(latbox_s,latbox_n,by=.2)
 
-png('rt_fei_map2.png',width=7,height=6,units='in',res=300)
-par(mar=c(4.5,4.5,1,1))
-imagePlot(lons[1:(length(lons-1))],
-          lats[1:(length(lats)-1)],
-          habs_hp,
-          asp=1,col=mako(60),nlevel=59,
-          xlab='Longitude',ylab='Latitude',
-          legend.lab = expression(paste('Total number of samples (log'[10],')')))
-plot(world,add=T,col='gray70')
-contour(topo_lon,topo_lat,topo,add=T,
-        levels=c(-200),col='gray50',lwd=.75)
-dev.off()
+lats_c <- cut(habs$LATITUDE,lats)
+lons_c <- cut(habs$LONGITUDE,lons)
+lonlat_yr_mth <- expand.grid(lon=levels(lons_c),lat=levels(lats_c),year=2000:2022,month=1:12)
+h_agg <- aggregate(habs$CELLCOUNT,
+                   by=list(lon=lons_c,lat=lats_c,year(habs$date),month(habs$date)),
+                   mean,na.rm=T) |>
+  setNames(c('lon','lat','year','month','cellcount'))
+
+read_habs <- function(dat){
+  out_m <- t(matrix(dat$cellcount,length(levels(lats_c)),length(levels(lons_c))))
+  ind_na <- which(out_m==0)
+  out_m[which(out_m==0)] <- NA
+  out_m <- log10(out_m)
+  zeros <- matrix(NA,dim(out_m)[1],dim(out_m)[2])
+  zeros[ind_na] <- 0
+  return(list(out_m,zeros))
+}
+
+yr <- 2018
+
+par(mfrow=c(3,4))
+for(i in 1:12){
+  tmp <- subset(h_agg, year==yr & month==i)
+  tmp_exp <- expand.grid(lon=levels(lons_c),lat=levels(lats_c),year=yr,month=i)
+  hab_agg <- merge(tmp_exp,tmp,by=c('lon','lat','year','month'),all=T)
+  res <- read_habs(hab_agg)
+  
+  image(lons[1:(length(lons-1))],
+        lats[1:(length(lats)-1)],
+        res[[1]])
+  image(lons[1:(length(lons-1))],
+        lats[1:(length(lats)-1)],
+        res[[2]],col=1,add=T)
+  plot(world,add=T,col='gray70')
+  
+}
+
+
+
+lons <- seq(lonbox_w,lonbox_e,by=.5)
+lats <- seq(latbox_s,latbox_n,by=.5)
+lats_c <- cut(habs$LATITUDE,lats)
+lons_c <- cut(habs$LONGITUDE,lons)
+# lonlat <- expand.grid(lon=levels(lons_c),lat=levels(lats_c))
+lonlat_yr_mth <- expand.grid(lon=levels(lons_c),lat=levels(lats_c),year=2000:2022,month=1:12)
+h_agg <- aggregate(habs$CELLCOUNT,
+                   by=list(lon=lons_c,lat=lats_c,year=year(habs$date),month=month(habs$date)),
+                   mean,na.rm=T)
+hab_agg <- merge(lonlat_yr_mth,h_agg,by=c('lon','lat','year','month'),all=T)
+hab_agg$grid <- paste(hab_agg$lon,hab_agg$lat)
+
+hab_agg2 <- aggregate(x ~ year + month + grid, data = hab_agg, mean, na.rm = T)
+
+hab_agg3 <- aggregate(x ~ year + month, data = hab_agg, function(x) length(which(x>=1e5))/length(x))
+hab_agg3 <- hab_agg3[order(hab_agg3$year, hab_agg3$month),]
+
+b <- barplot(hab_agg3$x,las=2,col=2)
+axis(1, at = b[seq(1,length(b),12)],unique(x$Group.1), las = 2)
+
+b <- barplot(t(x$x[,ncol(x$x):1]),las=2,col=rev(cols))
+axis(1, at = b[seq(1,length(b),12)],unique(x$Group.1), las = 2)
+
+library(cmocean)
+library(dplyr)
+library(sf)
+library(viridis)
+
+tmp <- subset(habs, year(date)==2010 & month(date)==9)
+projcrs <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+df <- st_as_sf(x = tmp,                         
+               coords = c("LONGITUDE", "LATITUDE"),
+               crs = st_crs(world))
+test <- st_make_grid(df, c(.2,.2), what = "polygons", square = FALSE)
+# To sf and add grid ID
+honeycomb_grid_sf = st_sf(test) %>%
+  # add grid ID
+  mutate(grid_id = 1:length(lengths(test)))
+
+
+hex_data <- st_join(honeycomb_grid_sf, df, join = st_intersects) %>%
+  group_by(grid_id) %>%
+  summarize(mean_value = mean(CELLCOUNT, na.rm = TRUE))
+hex_data_zeros = filter(hex_data, mean_value > 0 | !is.na(mean_value))
+
+hex_data_zeros <- hex_data_zeros |> mutate(mean_value = ifelse(mean_value==0,mean_value + 1, mean_value))
+
+# plot(hex_data)
+plot(hex_data_zeros['mean_value'],reset=F,logz=T, pal = cmocean('amp'))
+plot(st_as_sf(world), col = 'gray', add = T)
+
+plot(world,xlim=c(-88,-80),ylim=c(24,31))
+plot(hex_data_zeros['mean_value'],add=T,logz=T)
+
+
+
+
+
+# habs_h <- aggregate(habs$CELLCOUNT,by=list(lon=lons_c,lat=lats_c),length)
+# hab_h <- merge(lonlat,habs_h,by=c('lon','lat'),all=T)
+# hab_h_m <- t(matrix(hab_h$x,length(levels(lats_c)),length(levels(lons_c))))
+# hab_h_m[which(hab_h_m==0)] <- NA
+# habs_hp <- log10(hab_h_m)
+# 
+# png('rt_fei_map2.png',width=7,height=6,units='in',res=300)
+# par(mar=c(4.5,4.5,1,1))
+# imagePlot(lons[1:(length(lons-1))],
+#           lats[1:(length(lats)-1)],
+#           habs_hp,
+#           asp=1,col=mako(60),nlevel=59,
+#           xlab='Longitude',ylab='Latitude',
+#           legend.lab = expression(paste('Total number of samples (log'[10],')')))
+# plot(world,add=T,col='gray70')
+# contour(topo_lon,topo_lat,topo,add=T,
+#         levels=c(-200),col='gray50',lwd=.75)
+# dev.off()
 
 
 
