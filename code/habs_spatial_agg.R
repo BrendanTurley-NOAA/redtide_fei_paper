@@ -67,7 +67,8 @@ kb_q99 <- aggregate(CELLCOUNT ~ year(date) + month(date), data = habs, quantile,
 kb_q99 <- kb_q99[order(kb_q99$year, kb_q99$month),]
 kb_q99$yr_m <- kb_q99$year + kb_q99$month/12
 
-cols <- colorRampPalette(c('gray30','white','gold','orange2','red4'))(5)
+cols <- colorRampPalette(c('gray50','azure','yellow','orange','red2'),alpha=T)(5)
+
 szs <- c(1,1,1.5,1.5,2)*1.5
 
 
@@ -114,6 +115,51 @@ for(j in c(2005)){
              title = 'K. brevis (cells/mL)', bty = 'n', xpd = T)
     }
   } 
+}
+dev.off()
+
+
+setwd("C:/Users/brendan.turley/Documents/R_projects/redtide_fei_paper/figures")
+png('rt_fei_hab_comp2.png',width=12,height=11.25,units='in',res=300)
+par(mar = c(2.5,5,2,.5))
+layout(matrix(c(1,1,1,
+                2,3,4,
+                5,6,7),3,3,byrow=T),
+       heights = c(.7,1,1))
+
+plot(kb_qnt+1 ~ yr_m, data = kb_q99, log = 'y',
+     xaxt = 'n', las = 1, typ = 'h', lwd = 3, lend = 2,
+     ylab = '', xlab='')
+abline(v = seq(2000,2022,1)+(8.5/12), lty = 5, col = 4, lwd = 2, lend = 2)
+abline(h = 1e5, lty = 2, lwd = 2, col = 'gray50', lend = 2)
+with(subset(kb_q99, kb_qnt>=1e5),
+     points(kb_qnt+1 ~ yr_m, pch = 25, bg = 'gold', cex = 2))
+axis(1, seq(2000, 2023, 1)+(1/12), seq(2000, 2023, 1), las = 1)
+mtext('K Brevis (cells/mL)',2, line = 3.2, cex = 1)
+mtext(paste0(letters[1],')'),adj=0,font=2)
+# points(kb_m+1 ~ yr_m, data = kb_m, typ = 'l', lwd = 2,col='gold')
+
+n <- 2
+for(j in yrs){
+  tmp <- subset(habs, year(date)==j & is.element(month(date), mths))
+  tmp$cuts <- cut(tmp$CELLCOUNT, c(-.01,1e3,1e4,1e5,1e6,1e10))
+  tmp <- tmp[order(tmp$CELLCOUNT),]
+  
+  plot(world,xlim=c(-87.5,-80.5),ylim=c(24,31), col = 'gray80')
+  points(tmp$LONGITUDE, tmp$LATITUDE, asp = 1, 
+         pch = 21, col = 1,
+         cex  = szs[as.numeric(tmp$cuts)],
+         bg = cols[as.numeric(tmp$cuts)])
+  contour(topo_lon,topo_lat,topo,add=T,
+          levels=c(-100),col='gray50',lwd=.75)
+  mtext(paste('Aug-Oct',j),adj=1)
+  mtext(paste0(letters[n],')'),adj=0,font=2)
+  if(j==2018){
+    legend('bottomleft',c('0-999','1,000-9,999','10,000-99,999','100,000-999,999','>1,000,000'),
+           pt.bg = cols[1:5], pch = 21, pt.cex = 1.75, cex = 1.5,
+           title = 'K. brevis (cells/mL)', bty = 'n', xpd = T)
+  }
+  n <- n + 1
 }
 dev.off()
 
