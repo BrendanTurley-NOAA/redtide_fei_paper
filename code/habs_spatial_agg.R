@@ -8,11 +8,9 @@ library(terra)
 library(scales)
 
 ### load map
-# setwd("~/Desktop/professional/biblioteca/data/shapefiles/ne_10m_admin_0_countries")
 setwd("C:/Users/brendan.turley/Documents/data/shapefiles/ne_10m_admin_0_countries")
 world <- vect('ne_10m_admin_0_countries.shp')
 
-# setwd("~/Desktop/professional/biblioteca/data")
 setwd("C:/Users/brendan.turley/Documents/data/bathy")
 bathy <- nc_open('etopo1.nc')
 topo <- ncvar_get(bathy, 'Band1')
@@ -20,14 +18,10 @@ topo_lat <- ncvar_get(bathy, 'lat')
 topo_lon <- ncvar_get(bathy, 'lon')
 nc_close(bathy)
 
-# setwd("C:/Users/brendan.turley/Documents/data/habs")
 setwd("C:/Users/brendan.turley/Documents/data/habs/0120767/8.8/data/0-data")
 # original data requested from https://habsos.noaa.gov/about
-# habs1 <- read.csv('habsos_20220225.csv')
-# habs1 <- read.csv('habsos_20230714.csv')
 habs1 <- read.csv('habsos_20240430.csv')
 habs1 <- habs1[,-grep('X',names(habs1))]
-# habs1$date <- dmy_hm(paste(substr(habs1$SAMPLE_DATE,1,15),substr(habs1$SAMPLE_DATE,30,31)))
 habs1$date <- ymd(habs1$SAMPLE_DATE)
 table(year(habs1$date), month(habs1$date))
 habs <- habs1[which(year(habs1$date)<2023 & year(habs1$date)>1999 & habs1$STATE_ID=='FL' ),]
