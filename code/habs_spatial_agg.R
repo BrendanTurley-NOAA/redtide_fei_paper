@@ -72,55 +72,58 @@ cols <- colorRampPalette(c('gray50','azure','yellow','orange','red2'),alpha=T)(5
 szs <- c(1,1,1.5,1.5,2)*1.5
 
 
-setwd("C:/Users/brendan.turley/Documents/R_projects/redtide_fei_paper/figures")
-png('rt_fei_hab_comp.png',width=12,height=12,units='in',res=300)
-par(mar = c(2.5,5,2,.5))
-layout(matrix(c(1,1,1,1,
-                2,3,4,5,
-                6,7,8,9,
-                10,11,12,13),4,4,byrow=T))
-
-plot(kb_qnt+1 ~ yr_m, data = kb_q99, typ = 'h', log = 'y', xaxt = 'n', las = 1, lwd = 2, lend = 2,
-     ylab = '', xlab='')
-mtext('K Brevis (cells/mL)',2, line = 3.2, cex = 1)
-abline(h = 1e5, lty = 5)
-with(subset(kb_q99, kb_qnt>=1e5),
-     points(kb_qnt+1 ~ yr_m, pch = 25, bg = 2))
-axis(1, seq(2000, 2025, 1)+(1/12), seq(2000, 2025, 1), las = 1)
-abline(v = seq(2000,2025,1)+(9/12), lty = 5, col = 2)
-mtext(paste0(letters[1],')'),adj=0)
-# points(kb_m+1 ~ yr_m, data = kb_m, typ = 'l', lwd = 2,col='gold')
-
 # setwd("C:/Users/brendan.turley/Documents/R_projects/redtide_fei_paper/figures")
-# png('rt_fei_hab_comp2.png',width=10,height=12,units='in',res=300)
-# par(mfrow = c(4,3), mar = c(3,3,1,1))
-for(j in c(2005)){
-  for(i in 1:12){
-    tmp <- subset(habs, year(date)==j & month(date)==i)
-    tmp$cuts <- cut(tmp$CELLCOUNT, c(-.01,1e3,1e4,1e5,1e6,1e10))
-    tmp <- tmp[order(tmp$CELLCOUNT),]
-    
-    plot(world,xlim=c(-87.5,-80.5),ylim=c(24,31), col = 'gray80')
-    points(tmp$LONGITUDE, tmp$LATITUDE, asp = 1, pch = 21,
-           cex  = szs[as.numeric(tmp$cuts)],
-           bg = cols[as.numeric(tmp$cuts)])
-    contour(topo_lon,topo_lat,topo,add=T,
-            levels=c(-100),col='gray50',lwd=.75)
-    mtext(paste(month.name[i],2005),adj=1)
-    mtext(paste0(letters[i+1],')'),adj=0)
-    # plot(world, add = T)
-    if(i==12){
-      legend('bottomleft',c('0-1000','1000-10,000','10,000-100,000','100,000-1,000,000','>1,000,000'),
-             pt.bg = cols[1:5], pch = 21, pt.cex = 1.75, cex = 1.2,
-             title = 'K. brevis (cells/mL)', bty = 'n', xpd = T)
-    }
-  } 
-}
-dev.off()
+# png('rt_fei_hab_comp.png',width=12,height=12,units='in',res=300)
+# par(mar = c(2.5,5,2,.5))
+# layout(matrix(c(1,1,1,1,
+#                 2,3,4,5,
+#                 6,7,8,9,
+#                 10,11,12,13),4,4,byrow=T))
+# 
+# plot(kb_qnt+1 ~ yr_m, data = kb_q99, typ = 'h', log = 'y', xaxt = 'n', las = 1, lwd = 2, lend = 2,
+#      ylab = '', xlab='')
+# mtext('K Brevis (cells/mL)',2, line = 3.2, cex = 1)
+# abline(h = 1e5, lty = 5)
+# with(subset(kb_q99, kb_qnt>=1e5),
+#      points(kb_qnt+1 ~ yr_m, pch = 25, bg = 2))
+# axis(1, seq(2000, 2025, 1)+(1/12), seq(2000, 2025, 1), las = 1)
+# abline(v = seq(2000,2025,1)+(9/12), lty = 5, col = 2)
+# mtext(paste0(letters[1],')'),adj=0)
+# # points(kb_m+1 ~ yr_m, data = kb_m, typ = 'l', lwd = 2,col='gold')
+# 
+# # setwd("C:/Users/brendan.turley/Documents/R_projects/redtide_fei_paper/figures")
+# # png('rt_fei_hab_comp2.png',width=10,height=12,units='in',res=300)
+# # par(mfrow = c(4,3), mar = c(3,3,1,1))
+# for(j in c(2005)){
+#   for(i in 1:12){
+#     tmp <- subset(habs, year(date)==j & month(date)==i)
+#     tmp$cuts <- cut(tmp$CELLCOUNT, c(-.01,1e3,1e4,1e5,1e6,1e10))
+#     tmp <- tmp[order(tmp$CELLCOUNT),]
+#     
+#     plot(world,xlim=c(-87.5,-80.5),ylim=c(24,31), col = 'gray80')
+#     points(tmp$LONGITUDE, tmp$LATITUDE, asp = 1, pch = 21,
+#            cex  = szs[as.numeric(tmp$cuts)],
+#            bg = cols[as.numeric(tmp$cuts)])
+#     contour(topo_lon,topo_lat,topo,add=T,
+#             levels=c(-100),col='gray50',lwd=.75)
+#     mtext(paste(month.name[i],2005),adj=1)
+#     mtext(paste0(letters[i+1],')'),adj=0)
+#     # plot(world, add = T)
+#     if(i==12){
+#       legend('bottomleft',c('0-1000','1000-10,000','10,000-100,000','100,000-1,000,000','>1,000,000'),
+#              pt.bg = cols[1:5], pch = 21, pt.cex = 1.75, cex = 1.2,
+#              title = 'K. brevis (cells/mL)', bty = 'n', xpd = T)
+#     }
+#   } 
+# }
+# dev.off()
 
+
+yrs <- c(2008, 2009, 2010, 2005, 2014, 2018)
+mths <- 8:10
 
 setwd("C:/Users/brendan.turley/Documents/R_projects/redtide_fei_paper/figures")
-png('rt_fei_hab_comp2.png',width=12,height=11.25,units='in',res=300)
+png('rt_fei_hab_comp2-1.png',width=12,height=11.25,units='in',res=300)
 par(mar = c(2.5,5,2,.5))
 layout(matrix(c(1,1,1,
                 2,3,4,
