@@ -110,10 +110,10 @@ habs <- habs[-ind2,]
 
 # range(habs$LONGITUDE)
 # lons <- seq(-88, -79.2, .2)
-lons <- seq(lonbox_w, lonbox_e, .2)
+lons <- seq(lonbox_w, lonbox_e, .1)
 # range(habs$LATITUDE)
 # lats <- seq(24, 31, .2)
-lats <- seq(latbox_s, latbox_n, .2)
+lats <- seq(latbox_s, latbox_n, .1)
 
 lon_lat <- expand.grid(LONGITUDE = lons,
                        LATITUDE = lats)
