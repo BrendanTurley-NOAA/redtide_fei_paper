@@ -143,7 +143,7 @@ brks2 <- seq(0,12,2)
 # par(mfrow = c(1,2))
 
 setwd("C:/Users/brendan.turley/Documents/R_projects/redtide_fei_paper/figures")
-pdf('rt_spacetime2.pdf', 8.5, 8, pointsize = 10)
+pdf('rt_spacetime3.pdf', 8.5, 8, pointsize = 10)
 par(mfrow = c(2,2), mar = c(3,3,2,1))
 for(i in 2000:2022){
   # tmp <- subset(habs, year(date)==i) |>
