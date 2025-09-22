@@ -38,6 +38,12 @@ table(year(habs1$date), month(habs1$date))
 habs <- habs1[which(year(habs1$date)<2023 & year(habs1$date)>1999 & habs1$STATE_ID=='FL' ),]
 table(year(habs$date), month(habs$date))
 
+quantile(habs$CELLCOUNT, seq(0,1,.01),na.rm=T)
+
+plot(seq(0,1,.01),quantile(habs$CELLCOUNT, seq(0,1,.01),na.rm=T)+1,
+     log='y', asp = 1, typ = 'o')
+abline(h=c(1e4,1e5,1e6), lty = 5)
+abline(v=c(.9,.95,.975,.99), lty = 5)
 
 
 yrs <- c(2005, 2014, 2017, 2018, 2019)
@@ -142,8 +148,10 @@ brks2 <- seq(0,12,2)
 
 # par(mfrow = c(1,2))
 
+qt_thr <- .95 #.87
+
 setwd("C:/Users/brendan.turley/Documents/R_projects/redtide_fei_paper/figures")
-pdf('rt_spacetime3.pdf', 8.5, 8, pointsize = 10)
+pdf('rt_spacetime3-1.pdf', 8.5, 8, pointsize = 10)
 par(mfrow = c(2,2), mar = c(3,3,2,1))
 for(i in 2000:2022){
   # tmp <- subset(habs, year(date)==i) |>
@@ -151,8 +159,8 @@ for(i in 2000:2022){
   
   ### cell density
   tmp <- subset(habs, year(date)==i) |>
-    aggregate(CELLCOUNT ~ spat_bins + month(date), quantile, .95, na.rm = T) |>
-    aggregate(CELLCOUNT ~ spat_bins, quantile, .95, na.rm = T)
+    aggregate(CELLCOUNT ~ spat_bins + month(date), quantile, qt_thr, na.rm = T) |>
+    aggregate(CELLCOUNT ~ spat_bins, quantile, qt_thr, na.rm = T)
 
   tmp2 <- merge(lon_lat, tmp, by = c('spat_bins'), all = T)
   tmp2 <- tmp2[order(tmp2$LATITUDE, tmp2$LONGITUDE),]
@@ -164,7 +172,7 @@ for(i in 2000:2022){
   
   ### bloom length
   tmp_l <- subset(habs, year(date)==i) |>
-    aggregate(CELLCOUNT ~ spat_bins + month(date), quantile, .95, na.rm = T) |>
+    aggregate(CELLCOUNT ~ spat_bins + month(date), quantile, qt_thr, na.rm = T) |>
     aggregate(CELLCOUNT ~ spat_bins, function(x) length(which(x>1e4)))
   
   tmp_l2 <- merge(lon_lat, tmp_l, by = c('spat_bins'), all = T)
