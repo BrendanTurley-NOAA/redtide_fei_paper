@@ -42,8 +42,8 @@ quantile(habs$CELLCOUNT, seq(0,1,.01),na.rm=T)
 
 plot(seq(0,1,.01),quantile(habs$CELLCOUNT, seq(0,1,.01),na.rm=T)+1,
      log='y', asp = 1, typ = 'o')
-abline(h=c(1e4,1e5,1e6), lty = 5)
-abline(v=c(.9,.95,.975,.99), lty = 5)
+abline(h=c(1e4,1e5,1e6), lty = 5, col = 2)
+abline(v=c(.9,.95,.975,.99), lty = 5, col = 4)
 
 
 yrs <- c(2005, 2014, 2017, 2018, 2019)
@@ -206,6 +206,50 @@ for(i in 2000:2022){
 dev.off()
 
 
+
+
+### bivariate color experiment
+
+library(biscale) 
+
+bi_pal(pal = "PurpleOr", dim = 4, flip_axes = F, preview = T)
+cols <- bi_pal(pal = "PurpleOr", dim = 4, flip_axes = F, preview = F)
+
+bivariate_color_scale <- data.frame(group = names(cols),
+                                    fill = cols)
+
+# group    fill
+# 1    4-4 '#d3d3d3'
+# 2    4-3 '#d3af95'
+# 3    4-2 '#d28753'
+# 4    4-1 '#d25601'
+# 5    3-4 '#a89db9'
+# 6    3-3 '#a88283'
+# 7    3-2 '#a86448'
+# 8    3-1 '#a84001'
+# 9    2-4 '#7e6a9f'
+# 10   2-3 '#7e5771'
+# 11   2-2 '#7e433e'
+# 12   2-1 '#7e2b01'
+# 13   1-4 '#563787'
+# 14   1-3 '#562d5f'
+# 15   1-2 '#552335'
+# 16   1-1 '#551601'
+
+# group_fill <- expand.grid(4:1,4:1) |>
+#   arrange(desc(Var1), desc(Var2))
+# bivariate_color_scale <- data.frame(group = paste(group_fill$Var1, group_fill$Var2, sep = '-'),
+#                                     fill = cols)
+
+colm <- factor(bivariate_color_scale$fill, levels = bivariate_color_scale$fill)
+col_coord <- matrix(as.numeric(unlist(strsplit(bivariate_color_scale$group,'-'))),2,16)
+
+image(1:4,1:4,
+      matrix(as.numeric(colm),4,4), col = bivariate_color_scale$fill,
+      asp = 1, xaxt = 'n', yaxt = 'n', bty = 'n', xlab = '', ylab = '')
+text(col_coord[1,],col_coord[2,],bivariate_color_scale$fill)
+
+
 brks <- seq(0,8,2)
 brks2 <- seq(0,12,4)
 par(mfrow = c(1,2))
@@ -244,9 +288,10 @@ for(i in 2000:2022){
   
 }
 
-bi_pal(pal = "PurpleOr", dim = 4, flip_axes = F, preview = T)
 
 library(biscale)
+
+bi_pal(pal = "PurpleOr", dim = 4, flip_axes = F, preview = T)
 cols <- bi_pal(pal = "PurpleOr", dim = 4, flip_axes = F, preview = F)
 
 bivariate_color_scale <- data.frame(group = names(cols),
