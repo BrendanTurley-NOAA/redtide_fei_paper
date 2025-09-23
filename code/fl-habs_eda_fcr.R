@@ -29,6 +29,10 @@ names(fl_gulf) <- c('state.county.fips', 'state.fips', 'COUNTYFP', 'county.name'
 fl_gulfco <- merge(FL, fl_gulf, by = c('COUNTYFP'), all.y = T) |>
   st_as_sf()
 
+x <- st_centroid(fl_gulfco) |> st_coordinates()
+fl_gulfco <- fl_gulfco[order(x[,1],x[,2]), ]
+fl_gulfco <- fl_gulfco[c(1:12,14:16,13,19,18,17,20:23), ]
+fl_co_order <- fl_gulfco$NAME
 
 setwd("C:/Users/brendan.turley/Documents/data/bathy")
 bathy <- nc_open('etopo1.nc')
