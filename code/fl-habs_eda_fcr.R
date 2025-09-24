@@ -81,9 +81,9 @@ for(i in fl_co_order){
     t_agg_n <- aggregate(CELLCOUNT ~ year(SAMPLE_DATE) + month(SAMPLE_DATE), h_temp, 
                          quantile, .9, na.rm = T) |>
       setNames(c('year','month','cells')) 
-    if(any(t_agg_n$cells>1e4)){
+    if(any(t_agg_n$cells>1e5)){
       t_agg_n <- t_agg_n |>
-        subset(cells>1e4) |>
+        subset(cells>1e5) |>
         aggregate(month ~ year, length) |>
         merge(yrs, all = T)
       

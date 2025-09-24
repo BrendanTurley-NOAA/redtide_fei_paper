@@ -92,7 +92,7 @@ for(j in yrs){
             levels=c(-100),col='gray50',lwd=.75)
     mtext(paste(month.abb[k],j),line=2)
     if(k==12){
-      legend(-87.5, 27,c('0-999','1,000-9,999','10,000-99,999','100,000-999,999','>1,000,000'),
+      legend(-87.5, 27,c('0-1,000','>1,000-10,000','>10,000-100,000','>100,000-1,000,000','>1,000,000'),
              pt.bg = cols[1:5], pch = 21, pt.cex = 1.2,
              title = 'K. brevis (cells/mL)', bty = 'n', xpd = T)
     }
@@ -132,7 +132,7 @@ habs$lats <- cut(habs$LATITUDE, lats, include.lowest = T)
 habs$spat_bins <- paste(habs$lons, habs$lats)
 
 # hab_agg1 <- aggregate(CELLCOUNT ~ spat_bins, data = habs, max, na.rm = T)
-hab_agg1 <- aggregate(CELLCOUNT ~ spat_bins, data = habs, quantile, .95, na.rm = T)
+hab_agg1 <- aggregate(CELLCOUNT ~ spat_bins, data = habs, quantile, .9, na.rm = T)
 
 hab_agg1m <- merge(lon_lat, hab_agg1, by = c('spat_bins'), all = T)
 hab_agg1m <- hab_agg1m[order(hab_agg1m$LATITUDE, hab_agg1m$LONGITUDE),]
@@ -148,7 +148,9 @@ brks2 <- seq(0,12,2)
 
 # par(mfrow = c(1,2))
 
-qt_thr <- .95 #.87
+qt_thr <- .9 #.87
+out <- data.frame(matrix(NA,23,4)) |>
+  setNames(c('year','tot_bins','pct_bins','mth_max'))
 
 setwd("C:/Users/brendan.turley/Documents/R_projects/redtide_fei_paper/figures")
 pdf('rt_spacetime3-1.pdf', 8.5, 8, pointsize = 10)
@@ -166,14 +168,14 @@ for(i in 2000:2022){
   tmp2 <- tmp2[order(tmp2$LATITUDE, tmp2$LONGITUDE),]
   
   tmp_m <- matrix(tmp2$CELLCOUNT, length(lons), length(lats))
-  tot <- length(which(tmp_m>1e4))
-  pct <- length(which(tmp_m>1e4))/length(which(!is.na(tmp_m)))
+  tot <- length(which(tmp_m>1e5))
+  pct <- length(which(tmp_m>1e5))/length(which(!is.na(tmp_m)))
   # tmp_m[which(tmp_m>1e6)] <- 1e6
   
   ### bloom length
   tmp_l <- subset(habs, year(date)==i) |>
     aggregate(CELLCOUNT ~ spat_bins + month(date), quantile, qt_thr, na.rm = T) |>
-    aggregate(CELLCOUNT ~ spat_bins, function(x) length(which(x>1e4)))
+    aggregate(CELLCOUNT ~ spat_bins, function(x) length(which(x>1e5)))
   
   tmp_l2 <- merge(lon_lat, tmp_l, by = c('spat_bins'), all = T)
   tmp_l2 <- tmp_l2[order(tmp_l2$LATITUDE, tmp_l2$LONGITUDE),]
@@ -190,7 +192,7 @@ for(i in 2000:2022){
   plot(FL, add = T, border = 'gray40')
   mtext(adj = 1, 'K. brevis Log10(cells/mL)')
   mtext(adj = 0, paste ('year:',i))
-  text(-87.9, 25.5, adj = 0, font = 2, 'Bins >1e4 cells/mL')
+  text(-87.9, 25.5, adj = 0, font = 2, 'Bins >1e5 cells/mL')
   text(-87.9, 25, adj = 0, paste('total:', tot))
   text(-87.9, 24.5, adj = 0, paste('proportion:', round(pct, digits = 2)))
   
@@ -200,11 +202,23 @@ for(i in 2000:2022){
             xlim = c(-88, -80), ylim = c(24, 31))
   # plot(world,xlim=c(-87.5,-80.5),ylim=c(24,31), add = T, border = 'gray')
   plot(FL, add = T, border = 'gray40')
-  mtext(adj = 1, '# of months (K. brevis >1e4 cells/mL)')
+  mtext(adj = 1, '# of months (K. brevis >1e5 cells/mL)')
   text(-86, 25, adj = 1, paste('max:', max_mth))
+  
+  out[i-1999, ] <- c(i, tot, pct, max_mth)
+  
 }
 dev.off()
 
+par(mfrow = c(2,2))
+plot(out$tot_bins, out$mth_max, cex = out$pct_bins*20)
+text(jitter(out$tot_bins), jitter(out$mth_max), substr(out$year,3,4), cex = .8, adj = 1)
+
+plot(out$pct_bins, out$mth_max, cex = out$tot_bins/10)
+text(jitter(out$pct_bins), jitter(out$mth_max), substr(out$year,3,4), cex = .8, adj = 1)
+
+plot(out$tot_bins, out$pct_bins, cex = out$mth_max*2)
+text(jitter(out$tot_bins), jitter(out$pct_bins), substr(out$year,3,4), cex = .8, adj = 1)
 
 
 
