@@ -58,36 +58,62 @@ hab_buf <- fl_gulfco |>
 
 county_aggs <- aggregate(CELLCOUNT ~ NAME , data = hab_buf, quantile, .9, na.rm = T) |>
   arrange(desc(CELLCOUNT))
-aggregate(CELLCOUNT ~ NAME , data = hab_buf, median, na.rm = T) |>
+aggregate(CELLCOUNT ~ NAME , data = hab_buf, mean, na.rm = T) |>
   arrange(desc(CELLCOUNT))
 aggregate(CELLCOUNT ~ NAME , data = hab_buf, sum, na.rm = T) |>
   arrange(desc(CELLCOUNT))
 
-m_out <- matrix(NA, 23, 24) |>
+m_out <- m_out2 <- m_out3 <- matrix(NA, 23, 24) |>
   as.data.frame()
 names(m_out) <- c('county', paste(seq(2000, 2022)))
+names(m_out2) <- c('county', paste(seq(2000, 2022)))
+names(m_out3) <- c('county', paste(seq(2000, 2022)))
 yrs <- data.frame(year = seq(2000, 2022))
-fl_coastco <- unique(fl_gulfco$NAME)
-for(i in fl_coastco){
-  # i <- fl_coastco[1]
+# fl_coastco <- unique(fl_gulfco$NAME)
+for(i in fl_co_order){
+  # i <- fl_coastco[19]
   
   h_temp <- subset(fl_gulfco, fl_gulfco$NAME==i) |>
     st_buffer(dist = 5*1609) |>
     st_join(habs_sf, left = T)
   
+  if(any(h_temp$CELLCOUNT>1e4)){
+    t_agg_n <- aggregate(CELLCOUNT ~ year(SAMPLE_DATE) + month(SAMPLE_DATE), h_temp, 
+                         quantile, .9, na.rm = T) |>
+      setNames(c('year','month','cells')) 
+    if(any(t_agg_n$cells>1e4)){
+      t_agg_n <- t_agg_n |>
+        subset(cells>1e4) |>
+        aggregate(month ~ year, length) |>
+        merge(yrs, all = T)
+      
+      m_out3[which(i==fl_co_order), ] <- c(i, t_agg_n$month)
+    }
+  }
+  
+  t_agg_p <- aggregate(CELLCOUNT ~ year(SAMPLE_DATE), h_temp, 
+            function(x) length(which(x>1e5))/length(x)) |>
+    setNames(c('year','pro_bl')) |>
+    merge(yrs, all = T)
+  
   t_agg <- aggregate(CELLCOUNT ~ year(SAMPLE_DATE), h_temp, quantile, .9, na.rm = T) |>
     setNames(c('year','celldensity')) |>
     merge(yrs, all = T)
   
-  m_out[which(i==fl_coastco), ] <- c(i, t_agg$celldensity)
+  m_out[which(i==fl_co_order), ] <- c(i, t_agg$celldensity)
+  m_out2[which(i==fl_co_order), ] <- c(i, t_agg_p$pro_bl)
+ 
 }
 m_out <- type.convert(m_out)
+m_out2 <- type.convert(m_out2)
+m_out3 <- type.convert(m_out3)
+m_out3[is.na(m_out3)] <- 0
 
 data.frame(county = m_out$county, 
-           q.9 = apply(m_out[,-1],1,quantile, .5, na.rm = T)) |>
+           q.9 = apply(m_out[,-1],1,quantile, .9, na.rm = T)) |>
   arrange(desc(q.9))
 
-plot(2000:2022,m_out[1,-1], ylim = range(m_out[,-1]+1,na.rm = T), typ = 'n',log='y')
+plot(2000:2022,m_out[1,-1], ylim = range(m_out[,-1]+1,na.rm = T), typ = 'n')
 for(i in county_aggs$NAME[1:5]){
   tmp <- subset(m_out, county==i)
   points(2000:2022,tmp[-1]+1,typ = 'o', 
@@ -96,3 +122,23 @@ for(i in county_aggs$NAME[1:5]){
 }
 abline(h=c(1e4), lty = 5)
 legend('bottomleft',county_aggs$NAME[1:5], lwd = 2, col = 1:5, cex = .5)
+
+plot(2000:2022,m_out2[1,-1], ylim = range(m_out2[,-1],na.rm = T), typ = 'n')
+for(i in county_aggs$NAME[1:5]){
+  tmp <- subset(m_out2, county==i)
+  points(2000:2022,tmp[-1],typ = 'o', 
+         col = which(i==county_aggs$NAME[1:5]),
+         lwd = 2)
+}
+legend('topright',county_aggs$NAME[1:5], lwd = 2, col = 1:5, cex = .7)
+
+plot(2000:2022,m_out3[1,-1], ylim = range(m_out3[,-1],na.rm = T), typ = 'n')
+for(i in county_aggs$NAME[1:5]){
+  tmp <- subset(m_out3, county==i)
+  points(2000:2022,tmp[-1],typ = 'o', 
+         col = which(i==county_aggs$NAME[1:5]),
+         lwd = 2)
+}
+legend('topright', county_aggs$NAME[1:5], lwd = 2, col = 1:5, cex = .7)
+
+
