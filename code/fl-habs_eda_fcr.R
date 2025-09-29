@@ -56,9 +56,11 @@ hab_buf <- fl_gulfco |>
   st_buffer(dist = 5*1609) |>
   st_join(habs_sf)
 
-county_aggs <- aggregate(CELLCOUNT ~ NAME , data = hab_buf, quantile, .9, na.rm = T) |>
+county_aggs <- aggregate(CELLCOUNT ~ NAME , data = hab_buf, quantile, .95, na.rm = T) |>
   arrange(desc(CELLCOUNT))
 aggregate(CELLCOUNT ~ NAME , data = hab_buf, mean, na.rm = T) |>
+  arrange(desc(CELLCOUNT))
+aggregate(CELLCOUNT ~ NAME , data = hab_buf, median, na.rm = T) |>
   arrange(desc(CELLCOUNT))
 aggregate(CELLCOUNT ~ NAME , data = hab_buf, sum, na.rm = T) |>
   arrange(desc(CELLCOUNT))
@@ -77,7 +79,7 @@ for(i in fl_co_order){
     st_buffer(dist = 5*1609) |>
     st_join(habs_sf, left = T)
   
-  if(any(h_temp$CELLCOUNT>1e4)){
+  if(any(h_temp$CELLCOUNT>1e5)){
     t_agg_n <- aggregate(CELLCOUNT ~ year(SAMPLE_DATE) + month(SAMPLE_DATE), h_temp, 
                          quantile, .9, na.rm = T) |>
       setNames(c('year','month','cells')) 
@@ -107,20 +109,23 @@ for(i in fl_co_order){
 m_out <- type.convert(m_out)
 m_out2 <- type.convert(m_out2)
 m_out3 <- type.convert(m_out3)
+m_out3$county <- fl_co_order
 m_out3[is.na(m_out3)] <- 0
 
 data.frame(county = m_out$county, 
            q.9 = apply(m_out[,-1],1,quantile, .9, na.rm = T)) |>
   arrange(desc(q.9))
 
-plot(2000:2022,m_out[1,-1], ylim = range(m_out[,-1]+1,na.rm = T), typ = 'n')
+### top 5 counties
+# par(mfrow = c(2,2))
+plot(2000:2022,m_out[1,-1], ylim = range(m_out[,-1]+1,na.rm = T), typ = 'n',log='y')
 for(i in county_aggs$NAME[1:5]){
   tmp <- subset(m_out, county==i)
   points(2000:2022,tmp[-1]+1,typ = 'o', 
          col = which(i==county_aggs$NAME[1:5]),
          lwd = 2)
 }
-abline(h=c(1e4), lty = 5)
+abline(h=c(1e5), lty = 5)
 legend('bottomleft',county_aggs$NAME[1:5], lwd = 2, col = 1:5, cex = .5)
 
 plot(2000:2022,m_out2[1,-1], ylim = range(m_out2[,-1],na.rm = T), typ = 'n')
@@ -137,8 +142,39 @@ for(i in county_aggs$NAME[1:5]){
   tmp <- subset(m_out3, county==i)
   points(2000:2022,tmp[-1],typ = 'o', 
          col = which(i==county_aggs$NAME[1:5]),
+         lwd = 2, pch = which(i==county_aggs$NAME[1:5]))
+}
+legend('topright', county_aggs$NAME[1:5], lwd = 2, col = 1:5, pch = 1:5, cex = .7)
+
+
+### bottom 5 counties
+# par(mfrow = c(2,2))
+plot(2000:2022,m_out[1,-1], ylim = range(m_out[,-1]+1,na.rm = T), typ = 'n',log='y')
+for(i in county_aggs$NAME[19:23]){
+  tmp <- subset(m_out, county==i)
+  points(2000:2022,tmp[-1]+1,typ = 'o', 
+         col = which(i==county_aggs$NAME[19:23]),
          lwd = 2)
 }
-legend('topright', county_aggs$NAME[1:5], lwd = 2, col = 1:5, cex = .7)
+abline(h=c(1e5), lty = 5)
+legend('bottomleft',county_aggs$NAME[19:23], lwd = 2, col = 1:5, cex = .5)
+
+plot(2000:2022,m_out2[1,-1], ylim = range(m_out2[,-1],na.rm = T), typ = 'n')
+for(i in county_aggs$NAME[19:23]){
+  tmp <- subset(m_out2, county==i)
+  points(2000:2022,tmp[-1],typ = 'o', 
+         col = which(i==county_aggs$NAME[19:23]),
+         lwd = 2)
+}
+legend('topright',county_aggs$NAME[1:5], lwd = 2, col = 1:5, cex = .7)
+
+plot(2000:2022,m_out3[1,-1], ylim = range(m_out3[,-1],na.rm = T), typ = 'n')
+for(i in county_aggs$NAME[19:23]){
+  tmp <- subset(m_out3, county==i)
+  points(2000:2022,tmp[-1],typ = 'o', 
+         col = which(i==county_aggs$NAME[19:23]),
+         lwd = 2, pch = which(i==county_aggs$NAME[19:23]))
+}
+legend('topright', county_aggs$NAME[1:5], lwd = 2, col = 1:5, pch = 1:5, cex = .7)
 
 

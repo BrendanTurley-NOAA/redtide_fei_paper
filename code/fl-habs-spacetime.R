@@ -113,13 +113,13 @@ habs <- habs[ind,]
 ind2 <- which(habs$LONGITUDE>-82 & habs$LATITUDE>27)
 habs <- habs[-ind2,]
 
-
+res <- .2 #.1
 # range(habs$LONGITUDE)
 # lons <- seq(-88, -79.2, .2)
-lons <- seq(lonbox_w, lonbox_e, .1)
+lons <- seq(lonbox_w, lonbox_e, res)
 # range(habs$LATITUDE)
 # lats <- seq(24, 31, .2)
-lats <- seq(latbox_s, latbox_n, .1)
+lats <- seq(latbox_s, latbox_n, res)
 
 lon_lat <- expand.grid(LONGITUDE = lons,
                        LATITUDE = lats)
@@ -132,7 +132,7 @@ habs$lats <- cut(habs$LATITUDE, lats, include.lowest = T)
 habs$spat_bins <- paste(habs$lons, habs$lats)
 
 # hab_agg1 <- aggregate(CELLCOUNT ~ spat_bins, data = habs, max, na.rm = T)
-hab_agg1 <- aggregate(CELLCOUNT ~ spat_bins, data = habs, quantile, .9, na.rm = T)
+hab_agg1 <- aggregate(CELLCOUNT ~ spat_bins, data = habs, quantile, .95, na.rm = T)
 
 hab_agg1m <- merge(lon_lat, hab_agg1, by = c('spat_bins'), all = T)
 hab_agg1m <- hab_agg1m[order(hab_agg1m$LATITUDE, hab_agg1m$LONGITUDE),]
@@ -148,12 +148,12 @@ brks2 <- seq(0,12,2)
 
 # par(mfrow = c(1,2))
 
-qt_thr <- .9 #.87
+qt_thr <- .95 #.87
 out <- data.frame(matrix(NA,23,4)) |>
   setNames(c('year','tot_bins','pct_bins','mth_max'))
 
 setwd("C:/Users/brendan.turley/Documents/R_projects/redtide_fei_paper/figures")
-pdf('rt_spacetime3-1.pdf', 8.5, 8, pointsize = 10)
+pdf('rt_spacetime2-1.pdf', 8.5, 8, pointsize = 10)
 par(mfrow = c(2,2), mar = c(3,3,2,1))
 for(i in 2000:2022){
   # tmp <- subset(habs, year(date)==i) |>
@@ -220,6 +220,8 @@ text(jitter(out$pct_bins), jitter(out$mth_max), substr(out$year,3,4), cex = .8, 
 plot(out$tot_bins, out$pct_bins, cex = out$mth_max*2)
 text(jitter(out$tot_bins), jitter(out$pct_bins), substr(out$year,3,4), cex = .8, adj = 1)
 
+plot(out$year, out$pct_bins, typ = 'o')
+plot(out$year, out$mth_max, typ = 'o')
 
 
 ### bivariate color experiment
