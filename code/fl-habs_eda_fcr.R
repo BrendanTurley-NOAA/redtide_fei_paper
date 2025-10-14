@@ -68,7 +68,8 @@ boxplot(per_year[,-1])
 
 per_county_year <- aggregate(CELLCOUNT ~ NAME + year(date), data = hab_buf, function(x) 
   sapply(c(1e3,1e4,1e5,1e6), function(y) 1-length(which(x>=y))/length(x)))
-boxplot(per_county_year[,3])
+boxplot(per_county_year[,3], col = 3, xaxt = 'n', varwidth = T)
+axis(1, 1:4,c(1e3,1e4,1e5,1e6))
 abline(h = c(.9, .95,.99), lty = 5, lwd = 2, lend = 2, col = 'gray30')
 
 boxplot(per_county[,-1],at = seq(1,8,2), xlim = c(0.5,8.5), ylim = c(.4,1), xaxt = 'n', varwidth = T)
@@ -106,6 +107,7 @@ for(i in fl_co_order){
     st_buffer(dist = 10) |>
     st_join(habs_sf, left = T)
   
+  ### number of months above quantile threshold
   if(any(h_temp$CELLCOUNT>d_thr)){
     t_agg_n <- aggregate(CELLCOUNT ~ year(SAMPLE_DATE) + month(SAMPLE_DATE), h_temp, 
                          quantile, q_thr, na.rm = T) |>
@@ -120,11 +122,13 @@ for(i in fl_co_order){
     }
   }
   
+  ### proportion of samples above the bloom threshold
   t_agg_p <- aggregate(CELLCOUNT ~ year(SAMPLE_DATE), h_temp, 
             function(x) length(which(x>d_thr))/length(x)) |>
     setNames(c('year','pro_bl')) |>
     merge(yrs, all = T)
   
+  ### cell density at quantile threshold
   t_agg <- aggregate(CELLCOUNT ~ year(SAMPLE_DATE), h_temp, quantile, q_thr, na.rm = T) |>
     setNames(c('year','celldensity')) |>
     merge(yrs, all = T)
@@ -145,34 +149,43 @@ data.frame(county = m_out$county,
 
 ### top 5 counties
 # par(mfrow = c(2,2))
-plot(2000:2022,m_out[1,-1], ylim = range(m_out[,-1]+1,na.rm = T), typ = 'n',log='y',
-     xlab = 'year', ylab = '90%tile Kb denisty (cells/mL)')
+plot(2000:2022,m_out[1,-1], ylim = range(m_out[,-1]+1,na.rm = T), typ = 'n', log = 'y',
+     xlab = 'year', ylab = '95%tile Kb denisty (cells/mL)')
+rect(1999.5, 1, 2004.5, 1e7, col = 'gray', border = F)
 for(i in county_aggs$county[1:5]){
   tmp <- subset(m_out, county==i)
   points(2000:2022,tmp[-1]+1,typ = 'o', 
          col = which(i==county_aggs$county[1:5]),
-         lwd = 2)
+         lwd = 2, pch = 16)
 }
 abline(h=c(1e5), lty = 5)
 legend('bottomleft',county_aggs$county[1:5], lwd = 2, col = 1:5, cex = .7)
 
+
+setwd("C:/Users/brendan.turley/Documents/R_projects/redtide_fei_paper/figures")
+png('rt_blooms_comp.png',width=7,height=9,units='in',res=300)
+par(mfrow=c(2,1),mar=c(4,4,1,1))
 plot(2000:2022,m_out2[1,-1], ylim = range(m_out2[,-1],na.rm = T), typ = 'n',
      xlab = 'year', ylab = 'Proportion of samples >1e5 Kb density')
+rect(1999.5, 0, 2004.5, 1, col = 'gray', border = F)
 for(i in county_aggs$county[1:5]){
   tmp <- subset(m_out2, county==i)
   points(2000:2022,tmp[-1],typ = 'o', 
          col = which(i==county_aggs$county[1:5]),
-         lwd = 2)
+         lwd = 2, pch = 16)
 }
+grid()
 legend('topright',county_aggs$county[1:5], lwd = 2, col = 1:5, cex = .7)
 
 plot(2000:2022,m_out3[1,-1], ylim = range(m_out3[,-1],na.rm = T), typ = 'n',
-     xlab = 'year', ylab = '# months 90%tile of samples >1e5 Kb density')
+     xlab = 'year', ylab = '# months 95%tile of samples >1e5 Kb density')
+rect(1999.5, 0, 2004.5, 20, col = 'gray', border = F)
 for(i in county_aggs$county[1:5]){
   tmp <- subset(m_out3, county==i)
   points(2000:2022,tmp[-1],typ = 'o', 
          col = which(i==county_aggs$county[1:5]),
-         lwd = 2, pch = which(i==county_aggs$county[1:5]))
+         lwd = 2, pch = 16)
 }
-legend('topright', county_aggs$county[1:5], lwd = 2, col = 1:5, pch = 1:5, cex = .7)
-
+grid()
+# legend('topright', county_aggs$county[1:5], lwd = 2, col = 1:5, pch = 1:5, cex = .7)
+dev.off()
