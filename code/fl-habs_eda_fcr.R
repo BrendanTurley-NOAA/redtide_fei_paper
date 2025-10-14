@@ -48,11 +48,16 @@ habs1 <- habs1[,-grep('X',names(habs1))]
 habs1$date <- ymd(habs1$SAMPLE_DATE)
 habs <- habs1[which(year(habs1$date)<2023 & year(habs1$date)>1999 & habs1$STATE_ID=='FL' ),]
 
+aggregate(CELLCOUNT ~ year(date), data = habs, function(x) length(x))
+
 habs_sf <- st_as_sf(habs, coords = c('LONGITUDE','LATITUDE'), crs = crs(fl_gulfco))
 
 hab_buf <- fl_gulfco |>
   st_buffer(dist = 10) |>
   st_join(habs_sf)
+
+aggregate(CELLCOUNT ~ NAME, data = hab_buf, quantile, .95, na.rm = T) |>
+  arrange(desc(CELLCOUNT))
 
 ### define some bloom thresholds
 overall <- sapply(c(1e3,1e4,1e5,1e6), function(x) 1-length(which(hab_buf$CELLCOUNT>=x))/nrow(hab_buf))
@@ -60,11 +65,11 @@ overall
 
 per_county <- aggregate(CELLCOUNT ~ NAME, data = hab_buf, function(x) 
   sapply(c(1e3,1e4,1e5,1e6), function(y) 1-length(which(x>=y))/length(x)))
-boxplot(per_county[,-1])
+# boxplot(per_county[,-1])
 
 per_year <- aggregate(CELLCOUNT ~ year(date), data = hab_buf, function(x) 
   sapply(c(1e3,1e4,1e5,1e6), function(y) 1-length(which(x>=y))/length(x)))
-boxplot(per_year[,-1])
+# boxplot(per_year[,-1])
 
 per_county_year <- aggregate(CELLCOUNT ~ NAME + year(date), data = hab_buf, function(x) 
   sapply(c(1e3,1e4,1e5,1e6), function(y) 1-length(which(x>=y))/length(x)))
@@ -81,14 +86,9 @@ legend('bottomright', c('by county', 'by year','overall'), col = c(1,1,2),pt.bg=
 
 per_county_x <- aggregate(CELLCOUNT ~ NAME, data = hab_buf, quantile, c(.8,.9,.95,.99), na.rm = T)
 
-aggregate(CELLCOUNT ~ year(date), data = hab_buf, function(x) length(x))
-
 county_aggs <- data.frame(county = per_county$NAME,
            cells_1e5 = 1-per_county$CELLCOUNT[,3]) |>
   arrange(desc(cells_1e5))
-
-aggregate(CELLCOUNT ~ NAME, data = hab_buf, quantile, .95, na.rm = T) |>
-  arrange(desc(CELLCOUNT))  
 
 q_thr <- .95
 d_thr <- 1e5
@@ -163,7 +163,7 @@ legend('bottomleft',county_aggs$county[1:5], lwd = 2, col = 1:5, cex = .7)
 
 
 setwd("C:/Users/brendan.turley/Documents/R_projects/redtide_fei_paper/figures")
-png('rt_blooms_comp.png',width=7,height=9,units='in',res=300)
+png('rt_blooms_comp.png',width=7,height=8,units='in',res=300)
 par(mfrow=c(2,1),mar=c(4,4,1,1))
 plot(2000:2022,m_out2[1,-1], ylim = range(m_out2[,-1],na.rm = T), typ = 'n',
      xlab = 'year', ylab = 'Proportion of samples >1e5 Kb density')
