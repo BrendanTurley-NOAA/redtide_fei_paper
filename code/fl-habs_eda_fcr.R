@@ -85,6 +85,7 @@ abline(h = c(.9, .95), lty = 5, lwd = 2, lend = 2, col = 'gray30')
 legend('bottomright', c('by county', 'by year','overall'), col = c(1,1,2),pt.bg=c('gray',3,NA),pch = c(22,22,3))
 
 per_county_x <- aggregate(CELLCOUNT ~ NAME, data = hab_buf, quantile, c(.8,.9,.95,.99), na.rm = T)
+write.csv(per_county_x, 'rt_buff_agg.csv', row.names = F)
 
 county_aggs <- data.frame(county = per_county$NAME,
            cells_1e5 = 1-per_county$CELLCOUNT[,3]) |>
