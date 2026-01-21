@@ -65,11 +65,11 @@ overall
 
 per_county <- aggregate(CELLCOUNT ~ NAME, data = hab_buf, function(x) 
   sapply(c(1e3,1e4,1e5,1e6), function(y) 1-length(which(x>=y))/length(x)))
-# boxplot(per_county[,-1])
+boxplot(per_county[,-1])
 
 per_year <- aggregate(CELLCOUNT ~ year(date), data = hab_buf, function(x) 
   sapply(c(1e3,1e4,1e5,1e6), function(y) 1-length(which(x>=y))/length(x)))
-# boxplot(per_year[,-1])
+boxplot(per_year[,-1])
 
 per_county_year <- aggregate(CELLCOUNT ~ NAME + year(date), data = hab_buf, function(x) 
   sapply(c(1e3,1e4,1e5,1e6), function(y) 1-length(which(x>=y))/length(x)))
@@ -81,9 +81,10 @@ boxplot(per_county[,-1],at = seq(1,8,2), xlim = c(0.5,8.5), ylim = c(.4,1), xaxt
 boxplot(per_year[,-1],at = seq(2,8,2), add = T, col = 3, xaxt = 'n', varwidth = T)
 axis(1, seq(1.5,7.5,2),c(1e3,1e4,1e5,1e6))
 points(seq(1.5,7.5,2), overall, pch = 3, cex = 1.5, lwd = 3, col = 2, lend = 2)
-abline(h = c(.9, .95), lty = 5, lwd = 2, lend = 2, col = 'gray30')
+abline(h = c(.9, .95, .99), lty = 5, lwd = 2, lend = 2, col = 'gray30')
 legend('bottomright', c('by county', 'by year','overall'), col = c(1,1,2),pt.bg=c('gray',3,NA),pch = c(22,22,3))
 
+setwd("~/R_projects/redtide_fei_paper/data")
 per_county_x <- aggregate(CELLCOUNT ~ NAME, data = hab_buf, quantile, c(.8,.9,.95,.99), na.rm = T)
 write.csv(per_county_x, 'rt_buff_agg.csv', row.names = F)
 
@@ -143,6 +144,11 @@ m_out2 <- type.convert(m_out2)
 m_out3 <- type.convert(m_out3)
 m_out3$county <- fl_co_order
 m_out3[is.na(m_out3)] <- 0
+
+setwd("~/R_projects/redtide_fei_paper/data")
+write.csv(m_out, 'rt_den_abovq95_1e5.csv', row.names = F)
+write.csv(m_out2, 'rt_prop_abovq95_1e5.csv', row.names = F)
+write.csv(m_out3, 'rt_mnth_abovq95_1e5.csv', row.names = F)
 
 data.frame(county = m_out$county, 
            q.9 = apply(m_out[,-1],1,quantile, .95, na.rm = T)) |>
