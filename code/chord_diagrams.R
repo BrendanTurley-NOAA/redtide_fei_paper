@@ -59,8 +59,8 @@ dat <- dat[-6,-6]
 
 cols <- matrix('gray50',nrow(dat),ncol(dat))
 ind_rt <- which(names(dat)=='Red.Tide')
-cols[ind_rt,c(which(dat[ind_rt,]>0))] <- 2
-cols[c(which(dat[,ind_rt]>0)),ind_rt] <- 3
+cols[ind_rt,c(which(dat[ind_rt,]>0))] <- 'orange2'
+cols[c(which(dat[,ind_rt]>0)),ind_rt] <- 'purple'
 
 lwd_mat <- matrix(1,nrow(dat),ncol(dat))
 ind_rt <- which(names(dat)=='Red.Tide')
@@ -80,7 +80,7 @@ ord <- c("Red.Tide","Hurricanes","Offshore.Winds","Currents","Loop.Current","Fre
          "Water.Quality","Thermocline","Water.Temperature","Habitat","Inshore.Target.Fish","Prey.Fish",
          "Fish.Distribution","Fish.Mortality","Snappers.Groupers","Lionfish","Sharks",
          "Commercial.Effort","Recreational.Effort","Tourism","Fishery.Management")
-grid.col <- c('red',rep(4,9),rep(3,8),rep('purple',4))
+grid.col <- c('red',rep(4,9),rep('forestgreen',8),rep('gold',4))
 row.names(dat)
 colnames(dat)
 identical(rownames(dat), colnames(dat))
